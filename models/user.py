@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from extensions import db
 
 
@@ -23,9 +23,31 @@ class User(db.Model):
         nullable=True
     )
 
+    age_group = db.Column(
+        db.String(20),
+        nullable=True
+    )
+
+    activity_level = db.Column(
+        db.String(50),
+        nullable=True
+    )
+
+    outdoor_exposure = db.Column(
+        db.String(30),
+        nullable=True
+    )
+
+    notification_enabled = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=True,
+        server_default=db.true()
+    )
+
     created_at = db.Column(
         db.DateTime,
-        default=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None)
     )
 
     locations = db.relationship(

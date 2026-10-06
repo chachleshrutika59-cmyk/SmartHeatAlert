@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f7f8fa">
+    <title>HeatGuard 360 - History</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('dashboard.dashboard') }}" aria-label="HeatGuard 360 home">
+            <span class="brand-mark" aria-hidden="true">☀</span>
+            <span>HeatGuard <strong>360</strong></span>
+        </a>
+        <div class="topbar-right">
+            <a class="logout-link" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+            <a class="logout-link" href="{{ url_for('auth.logout') }}">Log out</a>
+        </div>
+    </header>
+
+    <main class="dashboard history-page">
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow">YOUR PERSONAL WEATHER RECORDS</p>
+                <h1>History<span class="heading-period">.</span></h1>
+                <p class="heading-subtitle">Past observations for your account and saved locations.</p>
+            </div>
+            <a class="heading-action" href="{{ url_for('dashboard.dashboard') }}">← Back to dashboard</a>
+        </section>
+
+        {% if chart_records %}
+            <section class="history-chart-card">
+                <div class="section-heading history-section-heading">
+                    <div>
+                        <p class="eyebrow">RECENT OBSERVATIONS</p>
+                        <h2>Temperature and heat risk</h2>
+                    </div>
+                    <div class="chart-legend">
+                        <span><i class="temperature-legend"></i>Temperature</span>
+                        <span><i class="risk-legend"></i>Risk score</span>
+                    </div>
+                </div>
+
+                <div class="history-chart" role="img" aria-label="Temperature and heat risk scores for recent observations">
+                    {% for point in chart_records %}
+                        <div class="history-chart-point">
+                            <div class="history-bars">
+                                <span
+                                    class="history-bar history-temperature-bar"
+                                    style="height: {{ point.temperature_height }}%"
+                                    title="Temperature: {{ point.record.temperature }}°C"
+                                ></span>
+                                <span
+                                    class="history-bar history-risk-bar {% if point.record.risk_level == 'Critical Risk' %}bar-critical{% elif point.record.risk_level == 'High Risk' %}bar-high{% elif point.record.risk_level == 'Moderate Risk' %}bar-moderate{% else %}bar-low{% endif %}"
+                                    style="height: {{ point.risk_height }}%"
+                                    title="Risk: {% if point.record.risk_score is not none %}{{ point.record.risk_score|round|int }}/100{% else %}unavailable{% endif %}"
+                                ></span>
+                            </div>
+                            <span class="history-chart-value">{{ point.record.temperature|round|int }}°</span>
+                            <time datetime="{{ point.record.recorded_at.isoformat() }}">{{ point.record.recorded_at.strftime("%b %d") }}</time>
+                        </div>
+                    {% endfor %}
+                </div>
+                <p class="history-chart-note">Temperature bar height is normalized for display; risk bars use the stored 0–100 score.</p>
+            </section>
+        {% endif %}
+
+        <section class="history-table-card">
+            <div class="section-heading history-section-heading">
+                <div>
+                    <p class="eyebrow">OBSERVATION LOG</p>
+                    <h2>Temperature history</h2>
+                </div>
+                <span class="snapshot-caption">{{ records|length }} recent record{% if records|length != 1 %}s{% endif %}</span>
+            </div>
+
+            {% if records %}
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Date / time</th>
+                                <th scope="col">Location</th>
+                                <th scope="col">Temperature</th>
+                                <th scope="col">Humidity</th>
+                                <th scope="col">Feels-like</th>
+                                <th scope="col">Heat risk</th>
+                                <th scope="col">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                                <tr>
+                                    <td>
+                                        <time datetime="{{ record.recorded_at.isoformat() }}">
+                                            {{ record.recorded_at.strftime("%b %d, %Y") }}<small>{{ record.recorded_at.strftime("%I:%M %p") }}</small>
+                                        </time>
+                                    </td>
+                                    <td>{{ record.location.location_name or ("%.4f"|format(record.location.latitude) ~ ", " ~ "%.4f"|format(record.location.longitude)) }}</td>
+                                    <td><strong>{{ record.temperature }}°C</strong></td>
+                                    <td>{% if record.humidity is not none %}{{ record.humidity }}%{% else %}—{% endif %}</td>
+                                    <td>{% if record.feels_like is not none %}{{ record.feels_like }}°C{% else %}—{% endif %}</td>
+                                    <td>
+                                        {% if record.risk_level %}
+                                            <span class="history-risk-pill {% if record.risk_level == 'Critical Risk' %}pill-critical{% elif record.risk_level == 'High Risk' %}pill-high{% elif record.risk_level == 'Moderate Risk' %}pill-moderate{% else %}pill-low{% endif %}">
+                                                {{ record.risk_level }}
+                                            </span>
+                                        {% else %}
+                                            <span class="history-muted">Unavailable</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{% if record.risk_score is not none %}{{ record.risk_score|round|int }}/100{% else %}—{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="history-empty">
+                    <span aria-hidden="true">▥</span>
+                    <h3>No temperature history yet</h3>
+                    <p>Once weather data is available for your saved location, dashboard visits will add observations here.</p>
+                    <a href="{{ url_for('dashboard.dashboard') }}">Return to dashboard</a>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+
+</html>

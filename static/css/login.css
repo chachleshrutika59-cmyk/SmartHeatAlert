@@ -1,0 +1,149 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: linear-gradient(135deg, #e0f7fa, #fff3e0);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+.login-card {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+
+    text-align: center;
+}
+
+.login-card h1 {
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.login-card label {
+    display: block;
+    text-align: left;
+
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 13px;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+
+    margin-bottom: 20px;
+
+    font-size: 16px;
+}
+
+.login-card button {
+    width: 100%;
+    padding: 13px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #ff7043;
+    color: white;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.login-card button:hover {
+    background: #f4511e;
+}
+
+.error {
+    color: #d32f2f;
+    margin-bottom: 15px;
+}
+
+.demo-otp {
+    margin-top: 20px;
+    color: #777;
+}
+
+.demo-otp-box {
+    margin-top: 20px;
+    padding: 15px;
+
+    background: #fff3e0;
+
+    border-radius: 12px;
+
+    text-align: center;
+}
+
+.demo-otp-box p {
+    margin-bottom: 5px;
+    color: #777;
+}
+
+.demo-otp-box strong {
+    display: block;
+
+    font-size: 28px;
+
+    letter-spacing: 5px;
+
+    color: #e65100;
+
+    margin: 8px 0;
+}
+
+.demo-otp-box small {
+    color: #888;
+}
+
+.otp-actions {
+    margin-top: 20px;
+}
+
+.otp-actions a {
+    color: #e65100;
+
+    text-decoration: none;
+
+    font-weight: bold;
+}
+
+.otp-actions a:hover {
+    text-decoration: underline;
+}
+
+.otp-info {
+    margin-top: 20px;
+
+    font-size: 13px;
+
+    color: #888;
+
+    line-height: 1.6;
+}

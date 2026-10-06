@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from extensions import db
 
 
@@ -37,7 +37,17 @@ class TemperatureRecord(db.Model):
         nullable=True
     )
 
+    risk_score = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    risk_level = db.Column(
+        db.String(50),
+        nullable=True
+    )
+
     recorded_at = db.Column(
         db.DateTime,
-        default=datetime.utcnow
+        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None)
     )

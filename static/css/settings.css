@@ -1,0 +1,97 @@
+.settings-logo {
+    color: #263238;
+    text-decoration: none;
+}
+
+.settings-container {
+    max-width: 760px;
+}
+
+.settings-card {
+    display: grid;
+    gap: 22px;
+    padding: 30px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.settings-field {
+    display: grid;
+    gap: 8px;
+}
+
+.settings-field label {
+    font-weight: 700;
+}
+
+.settings-field input,
+.settings-field select {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid #cfd8dc;
+    border-radius: 9px;
+    background: #fff;
+    color: #263238;
+    font: inherit;
+}
+
+.settings-field small {
+    color: #607d8b;
+}
+
+.settings-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.settings-toggle input {
+    width: 18px;
+    height: 18px;
+    accent-color: #e65100;
+}
+
+.settings-save {
+    min-height: 48px;
+    border: 0;
+    border-radius: 10px;
+    background: #e65100;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.settings-save:hover {
+    background: #bf360c;
+}
+
+.settings-errors,
+.settings-notice {
+    margin-bottom: 18px;
+    padding: 14px 18px;
+    border-radius: 10px;
+}
+
+.settings-errors {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.settings-errors ul {
+    margin: 8px 0 0 20px;
+}
+
+.settings-notice-success {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+@media (max-width: 500px) {
+    .settings-card {
+        padding: 22px;
+    }
+}

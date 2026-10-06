@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f7f8fa">
+    <title>HeatGuard 360 - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('dashboard.dashboard') }}" aria-label="HeatGuard 360 home">
+            <span class="brand-mark" aria-hidden="true">☀</span>
+            <span>HeatGuard <strong>360</strong></span>
+        </a>
+
+        <div class="topbar-right">
+            <span class="account-label">
+                <span class="account-dot" aria-hidden="true"></span>
+                {{ user.name or mobile_number }}
+            </span>
+            <a class="logout-link" href="{{ url_for('auth.logout') }}">Log out</a>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow">YOUR PERSONAL HEAT MONITOR</p>
+                <h1>Hello{% if user.name %}, {{ user.name }}{% endif %}<span class="heading-period">.</span></h1>
+                <p class="heading-subtitle">Stay informed. Stay cool. Stay safe.</p>
+            </div>
+            <a class="heading-action" href="{{ url_for('settings.settings') }}">
+                <span aria-hidden="true">⚙</span> Personalize your risk
+            </a>
+        </section>
+
+        <section class="hero-grid" aria-label="Heat risk overview">
+            <article class="risk-card {% if heat_risk_level == 'Low Risk' %}risk-low{% elif heat_risk_level == 'Moderate Risk' %}risk-moderate{% elif heat_risk_level == 'High Risk' %}risk-high{% elif heat_risk_level == 'Critical Risk' %}risk-critical{% else %}risk-unavailable{% endif %}">
+                <div class="risk-card-top">
+                    <div>
+                        <p class="eyebrow risk-eyebrow">PERSONALIZED HEAT RISK</p>
+                        <h2>Know your risk.<br>Make safer choices.</h2>
+                    </div>
+                    <span class="risk-sun" aria-hidden="true">☀</span>
+                </div>
+
+                <div class="risk-visual">
+                    <div class="risk-ring" role="img" aria-label="{% if heat_risk_score is not none %}Heat risk score {{ heat_risk_score }} out of 100{% else %}Heat risk score unavailable{% endif %}">
+                        <svg viewBox="0 0 128 128" aria-hidden="true">
+                            <circle class="ring-track" cx="64" cy="64" r="54"></circle>
+                            <circle
+                                class="ring-value"
+                                cx="64"
+                                cy="64"
+                                r="54"
+                                stroke-dasharray="339.292"
+                                style="--ring-offset: {{ 339.292 * (1 - heat_risk_score / 100) if heat_risk_score is not none else 339.292 }}"
+                            ></circle>
+                        </svg>
+                        <div class="ring-label">
+                            <strong>{% if heat_risk_score is not none %}{{ heat_risk_score }}{% else %}--{% endif %}</strong>
+                            <span>/ 100</span>
+                        </div>
+                    </div>
+
+                    <div class="risk-summary">
+                        <span class="risk-level">
+                            <span class="risk-level-icon" aria-hidden="true">{{ heat_risk_icon }}</span>
+                            {{ heat_risk_level }}
+                        </span>
+                        <p>{{ heat_risk_message }}</p>
+                        {% if heat_risk_score is none %}
+                            <a class="complete-settings" href="{{ url_for('settings.settings') }}">Complete your settings <span aria-hidden="true">→</span></a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="risk-card-glow" aria-hidden="true"></div>
+            </article>
+
+            <article class="current-card">
+                <div class="current-card-heading">
+                    <div>
+                        <p class="eyebrow">RIGHT NOW</p>
+                        <h2>Current conditions</h2>
+                    </div>
+                    <span class="weather-symbol" aria-hidden="true">☀</span>
+                </div>
+
+                <div class="current-temperature">
+                    <strong>{% if weather and weather.temperature is not none %}{{ weather.temperature }}{% else %}--{% endif %}</strong>
+                    <span>°C</span>
+                </div>
+
+                <div class="current-location">
+                    <span aria-hidden="true">⌖</span>
+                    <span>
+                        {% if location and location.location_name %}
+                            {{ location.location_name }}
+                        {% elif location %}
+                            {{ "%.4f"|format(location.latitude) }}, {{ "%.4f"|format(location.longitude) }}
+                        {% else %}
+                            Location not detected
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="current-divider"></div>
+                <div class="current-meta">
+                    <div>
+                        <span class="meta-icon humidity-icon" aria-hidden="true">◉</span>
+                        <span class="meta-label">Humidity</span>
+                        <strong>{% if weather and weather.humidity is not none %}{{ weather.humidity }}%{% else %}--{% endif %}</strong>
+                    </div>
+                    <div>
+                        <span class="meta-icon feels-icon" aria-hidden="true">≈</span>
+                        <span class="meta-label">Feels like</span>
+                        <strong>{% if weather and weather.feels_like is not none %}{{ weather.feels_like }}°C{% else %}--{% endif %}</strong>
+                    </div>
+                </div>
+                <p class="weather-updated">
+                    <span class="live-dot" aria-hidden="true"></span>
+                    {% if weather and weather.time %}Updated {{ weather.time }}{% else %}Weather update unavailable{% endif %}
+                </p>
+            </article>
+        </section>
+
+        <section
+            class="globe-card"
+            id="heat-globe"
+            aria-labelledby="globe-title"
+            data-latitude="{% if location %}{{ location.latitude }}{% endif %}"
+            data-longitude="{% if location %}{{ location.longitude }}{% endif %}"
+            data-temperature="{% if weather and weather.temperature is not none %}{{ weather.temperature }}{% endif %}"
+            data-location-name="{% if location %}{{ location.location_name or 'Selected location' }}{% else %}Location not set{% endif %}"
+        >
+            <div class="globe-copy">
+                <p class="eyebrow">YOUR LOCAL HEAT VIEW</p>
+                <h2 id="globe-title">A view of your world</h2>
+                <p>
+                    {% if location %}
+                        Heat conditions around {{ location.location_name or "your selected location" }}.
+                    {% else %}
+                        Add a saved location to see your local heat view.
+                    {% endif %}
+                </p>
+                <div class="globe-temperature">
+                    <span class="globe-temperature-icon" aria-hidden="true">☀</span>
+                    <span>
+                        <small>LOCAL TEMPERATURE</small>
+                        <strong>{% if weather and weather.temperature is not none %}{{ weather.temperature }}°C{% else %}Unavailable{% endif %}</strong>
+                    </span>
+                </div>
+                <span class="globe-caption">
+                    {% if location %}
+                        <span class="globe-caption-dot" aria-hidden="true"></span>
+                        Selected location marker
+                    {% else %}
+                        Location marker unavailable
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="globe-visual" aria-label="Decorative globe showing your selected location">
+                <div class="globe-fallback" aria-hidden="true">
+                    <span class="globe-fallback-grid"></span>
+                    {% if location %}
+                        <span
+                            class="globe-fallback-marker"
+                            style="left: {{ ((location.longitude + 180) / 360 * 100)|round(2) }}%; top: {{ ((90 - location.latitude) / 180 * 100)|round(2) }}%"
+                        ></span>
+                    {% endif %}
+                    <span class="globe-fallback-heat"></span>
+                </div>
+                <canvas class="globe-canvas" aria-hidden="true"></canvas>
+                <span class="globe-heat-wave globe-heat-wave-one" aria-hidden="true"></span>
+                <span class="globe-heat-wave globe-heat-wave-two" aria-hidden="true"></span>
+            </div>
+        </section>
+
+        <section class="section-heading">
+            <div>
+                <p class="eyebrow">YOUR PERSONAL SNAPSHOT</p>
+                <h2>Conditions that matter</h2>
+            </div>
+            <span class="snapshot-caption">Based on your profile and local weather</span>
+        </section>
+
+        <section class="stats-grid" aria-label="Personal heat conditions">
+            <article class="stat-card">
+                <span class="stat-icon stat-temperature" aria-hidden="true">🌡</span>
+                <p>Air temperature</p>
+                <strong>{% if weather and weather.temperature is not none %}{{ weather.temperature }}<small>°C</small>{% else %}--{% endif %}</strong>
+                <span class="stat-caption">Current local reading</span>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-icon stat-humidity" aria-hidden="true">◉</span>
+                <p>Relative humidity</p>
+                <strong>{% if weather and weather.humidity is not none %}{{ weather.humidity }}<small>%</small>{% else %}--{% endif %}</strong>
+                <span class="stat-caption">Moisture in the air</span>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-icon stat-feels" aria-hidden="true">≈</span>
+                <p>Feels-like temperature</p>
+                <strong>{% if weather and weather.feels_like is not none %}{{ weather.feels_like }}<small>°C</small>{% else %}--{% endif %}</strong>
+                <span class="stat-caption">Apparent temperature</span>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-icon stat-safe" aria-hidden="true">✓</span>
+                <p>Your safe temperature</p>
+                <strong>{% if user.safe_temperature is not none %}{{ user.safe_temperature }}<small>°C</small>{% else %}Not set{% endif %}</strong>
+                <span class="stat-caption">Your personal threshold</span>
+            </article>
+        </section>
+
+        <section class="forecast-section">
+            <div class="section-heading forecast-heading">
+                <div>
+                    <p class="eyebrow">WHAT'S AHEAD</p>
+                    <h2>Today’s heat forecast</h2>
+                </div>
+                <span class="snapshot-caption">Hourly outlook · bars use a −10 to 50°C display scale</span>
+            </div>
+
+            {% if forecast %}
+                <div class="forecast-chart" role="img" aria-label="Today's hourly temperature forecast">
+                    {% for item in forecast %}
+                        <div class="forecast-point">
+                            <span class="forecast-temperature">
+                                {% if item.temperature is not none %}{{ item.temperature|round|int }}°{% else %}--{% endif %}
+                            </span>
+                            <div class="forecast-bar-track">
+                                {% if item.risk %}
+                                    {% set forecast_color = "forecast-low" if item.risk.level == "Low Risk" else "forecast-moderate" if item.risk.level == "Moderate Risk" else "forecast-high" if item.risk.level == "High Risk" else "forecast-critical" %}
+                                {% else %}
+                                    {% set forecast_color = "forecast-unavailable" %}
+                                {% endif %}
+                                <span class="forecast-bar {{ forecast_color }}" style="height: {{ item.chart_height }}%"></span>
+                            </div>
+                            <span class="forecast-risk-icon" aria-hidden="true">{% if item.risk %}{{ item.risk.icon }}{% else %}⚪{% endif %}</span>
+                            <strong class="forecast-time">{{ item.time_label }}</strong>
+                            <span class="forecast-humidity">{% if item.humidity is not none %}{{ item.humidity|round|int }}%{% else %}--{% endif %}</span>
+                            <span class="forecast-risk">
+                                {% if item.risk %}
+                                    {{ item.risk.level }} · {{ item.risk.score }}/100
+                                {% else %}
+                                    Risk unavailable
+                                {% endif %}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="forecast-legend">
+                    <span><i class="legend-dot legend-low"></i>Low</span>
+                    <span><i class="legend-dot legend-moderate"></i>Moderate</span>
+                    <span><i class="legend-dot legend-high"></i>High</span>
+                    <span><i class="legend-dot legend-critical"></i>Critical</span>
+                    <span class="forecast-humidity-note">Humidity shown below each time</span>
+                </div>
+            {% else %}
+                <div class="forecast-empty">
+                    <span aria-hidden="true">☁</span>
+                    <p>Today's forecast is unavailable. Check your location or try refreshing later.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="bottom-grid">
+            <article class="safety-card">
+                <div class="safety-icon-wrap" aria-hidden="true">{{ heat_risk_icon }}</div>
+                <div class="safety-copy">
+                    <p class="eyebrow">PERSONALIZED SAFETY MESSAGE</p>
+                    <h2>{{ heat_risk_level }}</h2>
+                    <p>{{ heat_risk_message }}</p>
+                </div>
+            </article>
+
+            {% if recommendations %}
+                <article class="recommendations-card">
+                    <div class="actions-heading">
+                        <p class="eyebrow">PERSONALIZED FOR YOUR CONDITIONS</p>
+                        <h2>Safety recommendations</h2>
+                    </div>
+                    <ul class="recommendation-list">
+                        {% for recommendation in recommendations.recommendations %}
+                            <li>
+                                <span class="recommendation-check" aria-hidden="true">✓</span>
+                                <span>
+                                    <strong>{{ recommendation.title }}</strong>
+                                    {{ recommendation.message }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="hydration-tip">
+                        <span class="hydration-icon" aria-hidden="true">💧</span>
+                        <span>
+                            <strong>{{ recommendations.hydration.title }}</strong>
+                            {{ recommendations.hydration.message }}
+                        </span>
+                    </div>
+                    <p class="recommendation-disclaimer">{{ recommendations.disclaimer }}</p>
+                </article>
+            {% endif %}
+
+            <article class="actions-card">
+                <div class="actions-heading">
+                    <p class="eyebrow">TAKE ACTION</p>
+                    <h2>Quick actions</h2>
+                </div>
+                <div class="quick-actions">
+                    <button type="button" class="quick-action" onclick="getUserLocation()">
+                        <span class="action-icon action-location" aria-hidden="true">⌖</span>
+                        <span>Detect location</span>
+                        <span class="action-arrow" aria-hidden="true">→</span>
+                    </button>
+                    <button type="button" class="quick-action" onclick="window.location.reload()">
+                        <span class="action-icon action-refresh" aria-hidden="true">↻</span>
+                        <span>Refresh weather</span>
+                        <span class="action-arrow" aria-hidden="true">→</span>
+                    </button>
+                    <a class="quick-action" href="{{ url_for('settings.settings') }}">
+                        <span class="action-icon action-settings" aria-hidden="true">⚙</span>
+                        <span>Update preferences</span>
+                        <span class="action-arrow" aria-hidden="true">→</span>
+                    </a>
+                    <a class="quick-action" href="{{ url_for('alerts.alerts') }}">
+                        <span class="action-icon action-alerts" aria-hidden="true">♧</span>
+                        <span>View alerts{% if unread_alert_count %} ({{ unread_alert_count }} unread){% endif %}</span>
+                        <span class="action-arrow" aria-hidden="true">→</span>
+                    </a>
+                    <a class="quick-action" href="{{ url_for('history.history') }}">
+                        <span class="action-icon action-history" aria-hidden="true">▥</span>
+                        <span>Temperature history</span>
+                        <span class="action-arrow" aria-hidden="true">→</span>
+                    </a>
+                </div>
+                <div class="location-search-action">
+                    <label class="visually-hidden" for="location-search-input">Search for a location</label>
+                    <input
+                        id="location-search-input"
+                        type="text"
+                        placeholder="Search a location"
+                        autocomplete="off"
+                    >
+                    <button type="button" onclick="searchLocation()">Search</button>
+                    <p id="location-search-message" role="status"></p>
+                </div>
+            </article>
+        </section>
+
+        <footer class="dashboard-footer">
+            <span>HeatGuard 360 <span aria-hidden="true">·</span> Your personal heat safety companion</span>
+            <a href="{{ url_for('settings.settings') }}">Manage preferences</a>
+        </footer>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/location.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/heat_globe.js') }}"></script>
+</body>
+
+</html>

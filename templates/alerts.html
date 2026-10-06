@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f7f8fa">
+    <title>HeatGuard 360 - Alerts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/alerts.css') }}">
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('dashboard.dashboard') }}" aria-label="HeatGuard 360 home">
+            <span class="brand-mark" aria-hidden="true">☀</span>
+            <span>HeatGuard <strong>360</strong></span>
+        </a>
+        <div class="topbar-right">
+            <a class="logout-link" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+            <a class="logout-link" href="{{ url_for('auth.logout') }}">Log out</a>
+        </div>
+    </header>
+
+    <main class="dashboard alerts-page">
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow">YOUR HEAT SAFETY UPDATES</p>
+                <h1>Alerts<span class="heading-period">.</span></h1>
+                <p class="heading-subtitle">
+                    {% if unread_count %}{{ unread_count }} unread alert{% if unread_count != 1 %}s{% endif %}{% else %}You’re all caught up{% endif %}
+                </p>
+            </div>
+            <a class="heading-action" href="{{ url_for('dashboard.dashboard') }}">← Back to dashboard</a>
+        </section>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="alert-notice alert-notice-{{ category }}" role="status">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        {% if alerts %}
+            <section class="alert-list" aria-label="Your heat alerts">
+                {% for alert in alerts %}
+                    <article class="alert-item {% if not alert.is_read %}alert-unread{% endif %} {% if alert.heat_level == 'Critical Risk' %}alert-critical{% elif alert.heat_level == 'High Risk' %}alert-high{% else %}alert-threshold{% endif %}">
+                        <div class="alert-icon" aria-hidden="true">
+                            {% if alert.heat_level == 'Critical Risk' %}🔴{% elif alert.heat_level == 'High Risk' %}🟠{% else %}🌡️{% endif %}
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title-row">
+                                <h2>{{ alert.heat_level }}</h2>
+                                <span class="alert-state {% if alert.is_read %}state-read{% else %}state-unread{% endif %}">
+                                    <span aria-hidden="true"></span>
+                                    {% if alert.is_read %}Read{% else %}Unread{% endif %}
+                                </span>
+                            </div>
+                            <p class="alert-message">{{ alert.message }}</p>
+                            <div class="alert-details">
+                                <span><strong>{{ alert.temperature }}°C</strong> temperature</span>
+                                <span><strong>{% if alert.risk_score is not none %}{{ alert.risk_score|round|int }}/100{% else %}Unavailable{% endif %}</strong> risk score</span>
+                                <span><strong>{{ alert.location or "Unknown location" }}</strong> location</span>
+                                <span><strong>{{ alert.threshold }}°C</strong> safe temperature</span>
+                            </div>
+                            <time class="alert-time" datetime="{{ alert.created_at.isoformat() }}">
+                                {{ alert.created_at.strftime("%b %d, %Y at %I:%M %p") }}
+                            </time>
+                        </div>
+                        {% if not alert.is_read %}
+                            <form class="mark-read-form" method="POST" action="{{ url_for('alerts.mark_alert_read', alert_id=alert.id) }}">
+                                <button type="submit">Mark as read</button>
+                            </form>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <section class="alerts-empty">
+                <span aria-hidden="true">☀</span>
+                <h2>No heat alerts</h2>
+                <p>Alerts will appear here when your heat risk is high or critical, or the temperature exceeds your safe temperature.</p>
+                <a href="{{ url_for('dashboard.dashboard') }}">Return to dashboard</a>
+            </section>
+        {% endif %}
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeatGuard 360 - Settings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+</head>
+
+<body>
+    <header class="navbar">
+        <a class="logo settings-logo" href="{{ url_for('dashboard.dashboard') }}">
+            HeatGuard 360
+        </a>
+        <div class="nav-right">
+            <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </header>
+
+    <main class="dashboard-container settings-container">
+        <section class="welcome-section">
+            <h1>Personal settings</h1>
+            <p>Set your profile and heat-safety preferences.</p>
+        </section>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="settings-notice settings-notice-{{ category }}" role="status">
+                    {{ message }}
+                </p>
+            {% endfor %}
+        {% endwith %}
+
+        {% if errors %}
+            <div class="settings-errors" role="alert">
+                <p>Please correct the following:</p>
+                <ul>
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form class="settings-card" method="POST" action="{{ url_for('settings.settings') }}">
+            <div class="settings-field">
+                <label for="name">Name</label>
+                <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    maxlength="100"
+                    autocomplete="name"
+                    value="{{ values.name }}"
+                >
+            </div>
+
+            <div class="settings-field">
+                <label for="age_group">Age group</label>
+                <select id="age_group" name="age_group" required>
+                    <option value="">Select your age group</option>
+                    {% for value, label in age_groups.items() %}
+                        <option value="{{ value }}" {% if values.age_group == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="settings-field">
+                <label for="activity_level">Activity level</label>
+                <select id="activity_level" name="activity_level" required>
+                    <option value="">Select your activity level</option>
+                    {% for level in activity_levels %}
+                        <option value="{{ level }}" {% if values.activity_level == level %}selected{% endif %}>
+                            {{ level }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="settings-field">
+                <label for="outdoor_exposure">Outdoor exposure</label>
+                <select id="outdoor_exposure" name="outdoor_exposure" required>
+                    <option value="">Select your daily outdoor exposure</option>
+                    {% for exposure in outdoor_exposures %}
+                        <option value="{{ exposure }}" {% if values.outdoor_exposure == exposure %}selected{% endif %}>
+                            {{ exposure }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="settings-field">
+                <label for="safe_temperature">Safe temperature (°C)</label>
+                <input
+                    id="safe_temperature"
+                    name="safe_temperature"
+                    type="number"
+                    min="{{ min_safe_temperature }}"
+                    max="{{ max_safe_temperature }}"
+                    step="0.1"
+                    required
+                    value="{{ values.safe_temperature }}"
+                >
+                <small>Choose a value from {{ min_safe_temperature }}°C to {{ max_safe_temperature }}°C.</small>
+            </div>
+
+            <label class="settings-toggle" for="notification_enabled">
+                <input
+                    id="notification_enabled"
+                    name="notification_enabled"
+                    type="checkbox"
+                    value="true"
+                    {% if values.notification_enabled %}checked{% endif %}
+                >
+                <span>Enable heat safety notifications</span>
+            </label>
+
+            <button class="settings-save" type="submit">Save settings</button>
+        </form>
+    </main>
+</body>
+
+</html>

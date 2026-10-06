@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Verify OTP - Smart Heat Alert</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/login.css') }}">
+
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <div class="login-card">
+
+        <h1>🔐 Verify OTP</h1>
+
+        <p class="subtitle">
+            Enter the OTP to continue
+        </p>
+
+
+        {% if error %}
+
+        <p class="error">
+            {{ error }}
+        </p>
+
+        {% endif %}
+
+
+        <form method="POST">
+
+            <label>Enter OTP</label>
+
+            <input
+                type="text"
+                name="otp"
+                placeholder="Enter 6-digit OTP"
+                maxlength="6"
+                pattern="[0-9]{6}"
+                inputmode="numeric"
+                required
+            >
+
+            <button type="submit">
+                Verify OTP
+            </button>
+
+        </form>
+
+
+        <!-- Development OTP -->
+
+        {% if config.LOCAL_DEMO_MODE and config.DEMO_OTP_ENABLED and demo_otp %}
+
+        <div class="demo-otp-box">
+
+            <p>Development OTP</p>
+
+            <strong>{{ demo_otp }}</strong>
+
+            <small>
+                This is shown only for project testing.
+            </small>
+
+        </div>
+
+        {% endif %}
+
+
+        <div class="otp-actions">
+
+            <a href="{{ url_for('auth.resend_otp') }}">
+                🔄 Resend OTP
+            </a>
+
+        </div>
+
+
+        <p class="otp-info">
+            OTP is valid for 2 minutes.<br>
+            Maximum 3 verification attempts.
+        </p>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
